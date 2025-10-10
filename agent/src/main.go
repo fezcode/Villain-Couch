@@ -8,20 +8,17 @@ import (
 	"syscall"
 	"time"
 	"vlc-tracker-agent/agent/src/bootstrap"
-	"vlc-tracker-agent/agent/src/cli"
 	"vlc-tracker-agent/agent/src/config"
 	mediaplayer "vlc-tracker-agent/agent/src/media-player"
 	"vlc-tracker-agent/agent/src/models"
+	"vlc-tracker-agent/agent/src/options"
 	"vlc-tracker-agent/agent/src/storage"
 	"vlc-tracker-agent/common/logger"
 )
 
 func main() {
 	bootstrap.Bootstrap()
-
-	conf := config.GetConfig()
-	flags := cli.GetFlags()
-	vlc := mediaplayer.New(conf, flags)
+	vlc := mediaplayer.New(config.GetConfig(), options.GetOptions())
 
 	logger.Log.Info("Starting VilLain Couch [VLC Tracker]")
 	if err := vlc.CommandRunner.Start(); err != nil {
@@ -30,7 +27,6 @@ func main() {
 	}
 
 	run(&vlc)
-
 }
 
 func run(vlc *mediaplayer.VLCMediaPlayer) {
@@ -66,8 +62,6 @@ func run(vlc *mediaplayer.VLCMediaPlayer) {
 
 		case <-time.After(5 * time.Second):
 			// This case executes if the Done channel is not ready yet.
-			// logger.Log.Info("...still waiting for process to terminate...")
-			// You can perform other periodic tasks here.
 			handleTick(vlc)
 		}
 	}

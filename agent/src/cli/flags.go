@@ -2,7 +2,6 @@ package cli
 
 import (
 	"flag"
-	"os"
 	"vlc-tracker-agent/common/logger"
 )
 
@@ -21,13 +20,6 @@ func Initialize() {
 	flag.StringVar(&a.MediaFile, "file", "", "media file to play")
 	flag.Parse()
 	cliFlags = &a
-
-	// Validate Flags
-	// Check if the media file exists before trying to launch VLC.
-	if _, err := os.Stat(a.MediaFile); os.IsNotExist(err) {
-		logger.Log.Error("Media file not found", "Media File", a.MediaFile)
-		os.Exit(1)
-	}
 }
 
 func GetFlags() *CLIFlags {

@@ -8,8 +8,16 @@ import (
 	"vlc-tracker-agent/agent/src/cli"
 	"vlc-tracker-agent/agent/src/config"
 	"vlc-tracker-agent/agent/src/models"
+	"vlc-tracker-agent/agent/src/options"
 	"vlc-tracker-agent/common/logger"
 )
+
+type MediaPlayer interface {
+	Build(*config.Config, *options.Options)
+	Status()
+	Playlist()
+	PrintStatus(models.StatusMessage)
+}
 
 type VLCMediaPlayer struct {
 	Args             cli.VLCRunnerArguments
@@ -18,21 +26,14 @@ type VLCMediaPlayer struct {
 	PlaylistEndpoint string
 }
 
-type MediaPlayer interface {
-	Build(conf *config.Config, flags *cli.CLIFlags)
-	Status()
-	Playlist()
-	PrintStatus(models.StatusMessage)
-}
-
-func New(conf *config.Config, flags *cli.CLIFlags) VLCMediaPlayer {
+func New(conf *config.Config, opts *options.Options) VLCMediaPlayer {
 	vlc := VLCMediaPlayer{}
-	vlc.Build(conf, flags)
+	vlc.Build(conf, opts)
 	return vlc
 }
 
-func (vlc *VLCMediaPlayer) Build(conf *config.Config, flags *cli.CLIFlags) {
-	vlc.Args = cli.PrepareRunnerArguments(conf.VlcPath, flags.MediaFile, conf.ExtraIntf, conf.HttpPort, conf.HttpPassword)
+func (vlc *VLCMediaPlayer) Build(conf *config.Config, opts *options.Options) {
+	vlc.Args = cli.PrepareRunnerArguments(opts.VLCPath, opts.MediaFilePath, opts.MediaFileStartTime, conf.ExtraIntf, conf.HttpPort, conf.HttpPassword)
 	vlc.CommandRunner = cli.NewCommandRunnerForVLC(vlc.Args)
 	vlc.StatusEndpoint = fmt.Sprintf("%s:%s/%s", conf.WebUrl, conf.HttpPort, conf.StatusEndpoint)
 	vlc.PlaylistEndpoint = fmt.Sprintf("%s:%s/%s", conf.WebUrl, conf.HttpPort, conf.PlaylistEndpoint)

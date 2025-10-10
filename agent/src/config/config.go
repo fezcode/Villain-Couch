@@ -4,11 +4,10 @@ import (
 	_ "embed"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"os"
-	"path/filepath"
 	"vlc-tracker-agent/common/globals"
 	"vlc-tracker-agent/common/logger"
+	"vlc-tracker-agent/common/step"
 )
 
 //go:embed config.json
@@ -29,28 +28,12 @@ type Config struct {
 	ExtraIntf        string `json:"extra_intf"`
 	HttpPassword     string `json:"http_password"`
 	DatabaseFileName string `json:"database_file_name"`
-
-	// Generated Ones
-	VlcPath          string
-	DatabaseFilePath string
-}
-
-func getConfigPaths() (dir string, filename string, err error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", "", fmt.Errorf("could not get user home directory: %w", err)
-	}
-
-	configDir := filepath.Join(homeDir, ".", globals.CONFIG_FOLDER_NAME)
-	configFile := filepath.Join(configDir, globals.CONFIG_NAME)
-
-	return configDir, configFile, nil
 }
 
 // setupConfig ensures the required configuration directory and the config file exist.
-func setupConfig() error {
+func setupConfig(...string) error {
 	// 1. Get the user's home directory to resolve the '~' character.
-	configDir, configFile, err := getConfigPaths()
+	configDir, configFile, err := globals.GetConfigPaths()
 	if err != nil {
 		logger.Log.Error(err.Error(), "msg", "Error getting config paths")
 		return err
@@ -105,8 +88,8 @@ func setupConfig() error {
 	return nil
 }
 
-func loadConfig() error {
-	_, configFilePath, err := getConfigPaths()
+func loadConfig(...string) error {
+	_, configFilePath, err := globals.GetConfigPaths()
 	if err != nil {
 		logger.Log.Error(err.Error(), "msg", "Error getting config file path")
 		return err
@@ -130,50 +113,10 @@ func loadConfig() error {
 	return nil
 }
 
-func putVLCPath() error {
-	location, found, err := GetVLCInstallLocation()
-	if err != nil {
-		logger.Log.Error("could not read registry", "error", err)
-		return err
-	}
-
-	if !found {
-		logger.Log.Error("could not find media player install location")
-		logger.Log.Warn("INSTALL VLC")
-		os.Exit(1)
-	}
-
-	appConfig.VlcPath = filepath.Join(location, "vlc.exe")
-	return nil
-}
-
-func putDatabasePath() error {
-	dir, _, err := getConfigPaths()
-	if err != nil {
-		logger.Log.Error(err.Error(), "msg", "Error getting config file path")
-		return err
-	}
-
-	appConfig.DatabaseFilePath = filepath.Join(dir, appConfig.DatabaseFileName)
-	return nil
-}
-
-// step is a function type representing a single step in the bootstrap process.
-// It returns an error to indicate success or failure.
-type step func() error
-
 func Initialize() error {
-	steps := []step{
-		setupConfig,
-		loadConfig,
-		putVLCPath,
-		putDatabasePath,
+	steps := []step.Step{
+		{F: setupConfig},
+		{F: loadConfig},
 	}
-	for i, step := range steps {
-		if err := step(); err != nil {
-			logger.Log.Error(err.Error(), "step", i)
-			return fmt.Errorf("could not run step %d: %w", i, err)
-		}
-	}
-	return nil
+	return step.RunSteps(steps)
 }

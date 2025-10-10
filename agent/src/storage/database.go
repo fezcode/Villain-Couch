@@ -5,7 +5,6 @@ import (
 	_ "embed"
 	"fmt"
 	"time"
-	"vlc-tracker-agent/agent/src/config"
 	"vlc-tracker-agent/agent/src/models"
 	"vlc-tracker-agent/common/logger"
 
@@ -21,6 +20,9 @@ var querySetMediaFile string
 //go:embed queries/getMediaFile.sql
 var queryGetMediaFile string
 
+//go:embed queries/getLatestMediaFile.sql
+var queryGetLatestMediaFile string
+
 // DB represents a wrapper around the SQL database connection.
 type DB struct {
 	conn *sql.DB
@@ -28,9 +30,7 @@ type DB struct {
 
 // NewDB initializes a connection to an SQLite database file at the given path.
 // It creates the file and the necessary table if they don't exist.
-func NewDB(conf *config.Config) (*DB, error) {
-	path := conf.DatabaseFilePath
-
+func NewDB(path string) (*DB, error) {
 	// sql.Open() creates the database file if it doesn't exist.
 	conn, err := sql.Open("sqlite", path)
 	if err != nil {
@@ -90,4 +90,19 @@ func (db *DB) GetMediaFile(filepath string) (*models.MediaFile, error) {
 		return nil, fmt.Errorf("failed to get media file for filepath '%s': %w", filepath, err)
 	}
 	return mf, nil
+}
+
+// GetLatestUpdatedMediaFile retrieves the most recently updated record from the media_files table.
+func (db *DB) GetLatestUpdatedMediaFile() (*models.MediaFile, error) {
+	row := db.conn.QueryRow(queryGetLatestMediaFile)
+	var mf models.MediaFile
+	err := row.Scan(&mf.Filepath, &mf.Filename, &mf.TotalSeconds, &mf.CurrentSecond, &mf.CreatedAt, &mf.UpdatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// This means the table is empty. It's not an application error.
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to get latest media file: %w", err)
+	}
+	return &mf, nil
 }

@@ -1,2 +1,2 @@
-- Reset DB
+- Reset DB Clear Option
 - 

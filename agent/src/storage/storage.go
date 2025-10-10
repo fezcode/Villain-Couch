@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"vlc-tracker-agent/agent/src/config"
 	"vlc-tracker-agent/agent/src/models"
 )
 
@@ -19,9 +18,9 @@ func GetCache() *Cache[models.MediaFile] {
 	return cache
 }
 
-func Initialize(conf *config.Config) error {
+func Initialize(DatabaseFilePath string) error {
 	var err error
 	cache = NewCache[models.MediaFile]()
-	db, err = NewDB(conf)
+	db, err = NewDB(DatabaseFilePath)
 	return err
 }
