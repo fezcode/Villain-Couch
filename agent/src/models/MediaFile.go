@@ -12,9 +12,9 @@ type MediaFile struct {
 	UpdatedAt     time.Time
 }
 
-func FromStatus(v StatusMessage) MediaFile {
+func NewMediaFileFromStatus(v StatusMessage, s string) MediaFile {
 	return MediaFile{
-		Filepath:      v.GetFilename(), // TODO find a better way.
+		Filepath:      s,
 		Filename:      v.GetFilename(),
 		TotalSeconds:  v.GetLength(),
 		CurrentSecond: v.GetTime(),

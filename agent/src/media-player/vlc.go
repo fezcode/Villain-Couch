@@ -104,7 +104,7 @@ func (vlc *VLCMediaPlayer) Playlist() (models.PlaylistMessage, error) {
 	return &playlist, nil
 }
 
-func (vlc *VLCMediaPlayer) PrintStatus(s models.StatusMessage) {
+func (vlc *VLCMediaPlayer) LogStatus(s models.StatusMessage) {
 	currentTime := fmt.Sprintf("%02d:%02d:%02d", s.GetTime()/3600, (s.GetTime()%3600)/60, s.GetTime()%60)
 	totalTime := fmt.Sprintf("%02d:%02d:%02d", s.GetLength()/3600, (s.GetLength()%3600)/60, s.GetLength()%60)
 	logger.Log.Info("Pinged", "Filename", s.GetFilename(), "Status", s.GetState(), "Time", currentTime, "Total Time", totalTime)

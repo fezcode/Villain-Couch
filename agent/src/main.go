@@ -23,12 +23,17 @@ func main() {
 	flags := cli.GetFlags()
 	vlc := mediaplayer.New(conf, flags)
 
-	logger.Log.Info("Starting Villain Couch [VLC Tracker]")
+	logger.Log.Info("Starting VilLain Couch [VLC Tracker]")
 	if err := vlc.CommandRunner.Start(); err != nil {
 		logger.Log.Error("Failed to start command", "error", err)
 		os.Exit(1)
 	}
 
+	run(&vlc)
+
+}
+
+func run(vlc *mediaplayer.VLCMediaPlayer) {
 	// Graceful Shutdown Setup
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
@@ -45,7 +50,7 @@ func main() {
 			// TODO Post Close handle here
 			saveMediaStates()
 			os.Exit(0)
-		//break waitingLoop // Exit the for loop.
+			// Exit the for loop somehow
 
 		case sig := <-sigChan:
 			logger.Log.Info("Received signal, initiating graceful shutdown.", "signal", sig.String())
@@ -63,7 +68,7 @@ func main() {
 			// This case executes if the Done channel is not ready yet.
 			// logger.Log.Info("...still waiting for process to terminate...")
 			// You can perform other periodic tasks here.
-			handleTick(&vlc)
+			handleTick(vlc)
 		}
 	}
 }
@@ -87,10 +92,8 @@ func handleTick(vlc *mediaplayer.VLCMediaPlayer) {
 		// ignore error
 	}
 
-	vlc.PrintStatus(status)
-
-	mf := models.FromStatus(status)
-	mf.Filepath = currentFilepath
+	vlc.LogStatus(status)
+	mf := models.NewMediaFileFromStatus(status, currentFilepath)
 	storage.GetCache().Set(mf.Filename, mf)
 }
 
