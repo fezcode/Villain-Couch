@@ -2,6 +2,7 @@ package storage
 
 import (
 	"vlc-tracker-agent/agent/src/models"
+	"vlc-tracker-agent/common/logger"
 )
 
 // Database
@@ -23,4 +24,11 @@ func Initialize(DatabaseFilePath string) error {
 	cache = NewCache[models.MediaFile]()
 	db, err = NewDB(DatabaseFilePath)
 	return err
+}
+
+func Shutdown() {
+	if err := db.Close(); err != nil {
+		logger.Log.Error("could not close database", "error", err.Error())
+		return
+	}
 }

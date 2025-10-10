@@ -1,5 +1,9 @@
 package models
 
+const (
+	StateStopped = "stopped"
+)
+
 type StatusMessage interface {
 	GetState() string
 	GetTime() int

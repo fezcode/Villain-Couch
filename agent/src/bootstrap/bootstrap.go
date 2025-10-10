@@ -35,3 +35,7 @@ func Bootstrap() {
 	options.ValidateOptions()
 
 }
+
+func Teardown() {
+	storage.Shutdown()
+}

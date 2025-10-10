@@ -2,21 +2,28 @@ package media_player
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"os"
 	"time"
 	"vlc-tracker-agent/agent/src/cli"
 	"vlc-tracker-agent/agent/src/config"
 	"vlc-tracker-agent/agent/src/models"
 	"vlc-tracker-agent/agent/src/options"
+	"vlc-tracker-agent/common/encoding"
 	"vlc-tracker-agent/common/logger"
+	re "vlc-tracker-agent/common/regex"
 )
 
 type MediaPlayer interface {
 	Build(*config.Config, *options.Options)
-	Status()
-	Playlist()
-	PrintStatus(models.StatusMessage)
+	Status() (models.StatusMessage, error)
+	Playlist() (models.PlaylistMessage, error)
+	PlayFile(filepath string) error
+	TryNext() error
+	LogStatus(s models.StatusMessage)
 }
 
 type VLCMediaPlayer struct {
@@ -105,8 +112,61 @@ func (vlc *VLCMediaPlayer) Playlist() (models.PlaylistMessage, error) {
 	return &playlist, nil
 }
 
+func (vlc *VLCMediaPlayer) PlayFile(filepath string) error {
+	// 1. Convert the OS-specific file path to a valid URI.
+	uri := encoding.FormatFileURI(filepath)
+	const user = ""
+	client := &http.Client{Timeout: 3 * time.Second}
+
+	// 2. Construct the full URL with the correct command and input.
+	// The input parameter must be URL-encoded.
+	requestURL := fmt.Sprintf("%s?command=in_play&input=%s", vlc.StatusEndpoint, url.QueryEscape(uri))
+
+	// 3. Create the HTTP GET request.
+	req, err := http.NewRequest("GET", requestURL, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// 4. Set the Basic Authentication header. The username is blank.
+	req.SetBasicAuth(user, vlc.Args.HttpPassword)
+
+	// 5. Execute the request.
+	resp, err := client.Do(req)
+	if err != nil {
+		logger.Log.Error("could not connect to VLC's web interface", "error", err.Error())
+		return err
+	}
+	defer resp.Body.Close()
+
+	// 6. Check for a successful status code.
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("VLC returned non-200 status: %s", resp.Status)
+	}
+
+	return nil
+}
+
+func (vlc *VLCMediaPlayer) TryNext(currentFilepath string) error {
+	nextEpisodeName, ok := re.GetNextEpisodeFilename(currentFilepath)
+
+	if !ok {
+		logger.Log.Error("could not find next episode filename", "current", currentFilepath)
+		return fmt.Errorf("could not find next episode filename")
+	}
+
+	// Check if the media file exists before trying to launch VLC.
+	if _, err := os.Stat(nextEpisodeName); os.IsNotExist(err) {
+		logger.Log.Warn("Media file not found, exiting", "Media File", nextEpisodeName)
+		return errors.New("media file not found, exiting")
+	}
+
+	return vlc.PlayFile(nextEpisodeName)
+
+}
+
 func (vlc *VLCMediaPlayer) LogStatus(s models.StatusMessage) {
 	currentTime := fmt.Sprintf("%02d:%02d:%02d", s.GetTime()/3600, (s.GetTime()%3600)/60, s.GetTime()%60)
 	totalTime := fmt.Sprintf("%02d:%02d:%02d", s.GetLength()/3600, (s.GetLength()%3600)/60, s.GetLength()%60)
-	logger.Log.Info("Pinged", "Filename", s.GetFilename(), "Status", s.GetState(), "Time", currentTime, "Total Time", totalTime)
+	logger.Log.Info("Pinged", "Filename", s.GetFilename(), "State", s.GetState(), "Time", currentTime, "Total Time", totalTime)
 }

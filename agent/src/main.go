@@ -45,6 +45,7 @@ func run(vlc *mediaplayer.VLCMediaPlayer) {
 
 			// TODO Post Close handle here
 			saveMediaStates()
+			bootstrap.Teardown()
 			os.Exit(0)
 			// Exit the for loop somehow
 
@@ -89,6 +90,16 @@ func handleTick(vlc *mediaplayer.VLCMediaPlayer) {
 	vlc.LogStatus(status)
 	mf := models.NewMediaFileFromStatus(status, currentFilepath)
 	storage.GetCache().Set(mf.Filename, mf)
+
+	if status.GetState() == models.StateStopped {
+		saveMediaStates()
+		storage.GetCache().Delete(currentFilepath)
+		if err := vlc.TryNext(currentFilepath); err != nil {
+			logger.Log.Warn("cannot play next file", "error", err)
+			_ = vlc.CommandRunner.Stop()
+		}
+	}
+
 }
 
 func saveMediaStates() {
@@ -102,11 +113,6 @@ func saveMediaStates() {
 			logger.Log.Error("could not save state to database", "error", err.Error())
 			return
 		}
-	}
-
-	if err := db.Close(); err != nil {
-		logger.Log.Error("could not close database", "error", err.Error())
-		return
 	}
 }
 
