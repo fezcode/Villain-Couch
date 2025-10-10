@@ -61,7 +61,7 @@ func run(vlc *mediaplayer.VLCMediaPlayer) {
 			<-vlc.CommandRunner.Done()
 			logger.Log.Info("Background command stopped successfully.")
 
-		case <-time.After(5 * time.Second):
+		case <-time.After(500 * time.Millisecond):
 			// This case executes if the Done channel is not ready yet.
 			handleTick(vlc)
 		}
@@ -88,9 +88,9 @@ func handleTick(vlc *mediaplayer.VLCMediaPlayer) {
 	}
 
 	vlc.LogStatus(status)
-	mf := models.NewMediaFileFromStatus(status, currentFilepath)
-	storage.GetCache().Set(mf.Filename, mf)
 
+	// If file is completed then stop VLC.
+	// You don't need to update cache since it will be empty string.
 	if status.GetState() == models.StateStopped {
 		saveMediaStates()
 		storage.GetCache().Delete(currentFilepath)
@@ -98,6 +98,9 @@ func handleTick(vlc *mediaplayer.VLCMediaPlayer) {
 			logger.Log.Warn("cannot play next file", "error", err)
 			_ = vlc.CommandRunner.Stop()
 		}
+	} else {
+		mf := models.NewMediaFileFromStatus(status, currentFilepath)
+		storage.GetCache().Set(mf.Filepath, mf)
 	}
 
 }

@@ -37,7 +37,7 @@ func SetOptions(db *storage.DB) error {
 		}
 
 		if file == nil {
-			logger.Log.Error(err.Error(), "msg", "No file to play. Exiting.")
+			logger.Log.Error("No file to play. Exiting.")
 			os.Exit(1)
 		}
 
