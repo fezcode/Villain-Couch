@@ -4,18 +4,20 @@ import (
 	"os"
 	"vlc-tracker-agent/agent/src/cli"
 	"vlc-tracker-agent/agent/src/config"
+	"vlc-tracker-agent/agent/src/storage"
 	"vlc-tracker-agent/common/logger"
 )
 
 func Bootstrap() {
-	var err error
 	logger.Initialize()
 	cli.Initialize()
-	err = config.Initialize()
-
-	if err != nil {
+	if err := config.Initialize(); err != nil {
 		logger.Log.Error(err.Error(), "msg", "Error setting up config.")
 		os.Exit(1)
 	}
 
+	if err := storage.Initialize(config.GetConfig()); err != nil {
+		logger.Log.Error(err.Error(), "msg", "Error setting up storage.")
+		os.Exit(1)
+	}
 }

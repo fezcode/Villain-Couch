@@ -22,12 +22,17 @@ func GetConfig() *Config {
 
 // Config holds the application configuration loaded from config.json.
 type Config struct {
-	WebUrl         string `json:"web_url"`
-	StatusEndpoint string `json:"status_endpoint"`
-	VlcPath        string `json:"vlc_path"`
-	ExtraIntf      string `json:"extra_intf"`
-	HttpPort       string `json:"http_port"`
-	HttpPassword   string `json:"http_password"`
+	WebUrl           string `json:"web_url"`
+	StatusEndpoint   string `json:"status_endpoint"`
+	PlaylistEndpoint string `json:"playlist_endpoint"`
+	HttpPort         string `json:"http_port"`
+	ExtraIntf        string `json:"extra_intf"`
+	HttpPassword     string `json:"http_password"`
+	DatabaseFileName string `json:"database_file_name"`
+
+	// Generated Ones
+	VlcPath          string
+	DatabaseFilePath string
 }
 
 func getConfigPaths() (dir string, filename string, err error) {
@@ -125,7 +130,7 @@ func loadConfig() error {
 	return nil
 }
 
-func getVLCPath() error {
+func putVLCPath() error {
 	location, found, err := GetVLCInstallLocation()
 	if err != nil {
 		logger.Log.Error("could not read registry", "error", err)
@@ -142,6 +147,17 @@ func getVLCPath() error {
 	return nil
 }
 
+func putDatabasePath() error {
+	dir, _, err := getConfigPaths()
+	if err != nil {
+		logger.Log.Error(err.Error(), "msg", "Error getting config file path")
+		return err
+	}
+
+	appConfig.DatabaseFilePath = filepath.Join(dir, appConfig.DatabaseFileName)
+	return nil
+}
+
 // step is a function type representing a single step in the bootstrap process.
 // It returns an error to indicate success or failure.
 type step func() error
@@ -150,7 +166,8 @@ func Initialize() error {
 	steps := []step{
 		setupConfig,
 		loadConfig,
-		getVLCPath,
+		putVLCPath,
+		putDatabasePath,
 	}
 	for i, step := range steps {
 		if err := step(); err != nil {

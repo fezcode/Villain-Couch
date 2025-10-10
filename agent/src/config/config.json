@@ -1,7 +1,9 @@
 {
   "web_url": "http://localhost",
   "status_endpoint": "requests/status.json",
+  "playlist_endpoint": "requests/playlist.json",
   "http_port": "9713",
   "extra_intf": "http",
-  "http_password": "my_secret_password"
+  "http_password": "my_secret_password",
+  "database_file_name": "storage.sqlite"
 }

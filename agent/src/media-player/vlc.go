@@ -12,14 +12,16 @@ import (
 )
 
 type VLCMediaPlayer struct {
-	Args           cli.VLCRunnerArguments
-	CommandRunner  *cli.CommandRunner
-	StatusEndpoint string
+	Args             cli.VLCRunnerArguments
+	CommandRunner    *cli.CommandRunner
+	StatusEndpoint   string
+	PlaylistEndpoint string
 }
 
 type MediaPlayer interface {
 	Build(conf *config.Config, flags *cli.CLIFlags)
 	Status()
+	Playlist()
 	PrintStatus(models.StatusMessage)
 }
 
@@ -33,6 +35,7 @@ func (vlc *VLCMediaPlayer) Build(conf *config.Config, flags *cli.CLIFlags) {
 	vlc.Args = cli.PrepareRunnerArguments(conf.VlcPath, flags.MediaFile, conf.ExtraIntf, conf.HttpPort, conf.HttpPassword)
 	vlc.CommandRunner = cli.NewCommandRunnerForVLC(vlc.Args)
 	vlc.StatusEndpoint = fmt.Sprintf("%s:%s/%s", conf.WebUrl, conf.HttpPort, conf.StatusEndpoint)
+	vlc.PlaylistEndpoint = fmt.Sprintf("%s:%s/%s", conf.WebUrl, conf.HttpPort, conf.PlaylistEndpoint)
 }
 
 func (vlc *VLCMediaPlayer) Status() (models.StatusMessage, error) {
@@ -66,6 +69,39 @@ func (vlc *VLCMediaPlayer) Status() (models.StatusMessage, error) {
 	}
 
 	return &status, nil
+}
+
+func (vlc *VLCMediaPlayer) Playlist() (models.PlaylistMessage, error) {
+	var playlist models.VLCPlaylistNode
+	const user = ""
+	client := &http.Client{Timeout: 3 * time.Second}
+
+	req, err := http.NewRequest("GET", vlc.PlaylistEndpoint, nil)
+	if err != nil {
+		logger.Log.Error("Error building http request", "error", err.Error())
+		return playlist, err
+	}
+
+	req.SetBasicAuth(user, vlc.Args.HttpPassword)
+
+	res, err := client.Do(req)
+	if err != nil {
+		logger.Log.Error("could not connect to VLC's web interface", "error", err.Error())
+		return playlist, err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		logger.Log.Error("vlc returned a non-200 status code", "status_code", res.StatusCode)
+		return playlist, err
+	}
+
+	if err := json.NewDecoder(res.Body).Decode(&playlist); err != nil {
+		logger.Log.Error("could not decode VLC's JSON response", "error", err.Error())
+		return nil, err
+	}
+
+	return &playlist, nil
 }
 
 func (vlc *VLCMediaPlayer) PrintStatus(s models.StatusMessage) {

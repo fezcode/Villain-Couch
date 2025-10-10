@@ -11,6 +11,8 @@ import (
 	"vlc-tracker-agent/agent/src/cli"
 	"vlc-tracker-agent/agent/src/config"
 	mediaplayer "vlc-tracker-agent/agent/src/media-player"
+	"vlc-tracker-agent/agent/src/models"
+	"vlc-tracker-agent/agent/src/storage"
 	"vlc-tracker-agent/common/logger"
 )
 
@@ -39,6 +41,9 @@ func main() {
 				// The error "signal: interrupt" is expected here because we stopped it.
 				logger.Log.Warn("Background command finished with an error (as expected).", "error", err)
 			}
+
+			// TODO Post Close handle here
+			saveMediaStates()
 			os.Exit(0)
 		//break waitingLoop // Exit the for loop.
 
@@ -58,14 +63,53 @@ func main() {
 			// This case executes if the Done channel is not ready yet.
 			// logger.Log.Info("...still waiting for process to terminate...")
 			// You can perform other periodic tasks here.
-			status, err := vlc.Status()
-			if err != nil {
-				logger.Log.Error("VLC GetStatus Error", "error", err)
-				// ignore error
-			}
-
-			vlc.PrintStatus(status)
+			handleTick(&vlc)
 		}
+	}
+}
+
+func handleTick(vlc *mediaplayer.VLCMediaPlayer) {
+	status, err := vlc.Status()
+	if err != nil {
+		logger.Log.Error("VLC GetStatus Error", "error", err)
+		// ignore error
+	}
+
+	playlist, err := vlc.Playlist()
+	if err != nil {
+		logger.Log.Error("VLC GetPlaylist Error", "error", err)
+		// ignore error
+	}
+
+	currentFilepath, err := playlist.GetCurrent()
+	if err != nil {
+		logger.Log.Error("VLC GetCurrent Error", "error", err)
+		// ignore error
+	}
+
+	vlc.PrintStatus(status)
+
+	mf := models.FromStatus(status)
+	mf.Filepath = currentFilepath
+	storage.GetCache().Set(mf.Filename, mf)
+}
+
+func saveMediaStates() {
+	logger.Log.Info("Saving media states...")
+	db := storage.GetDB()
+	cache := storage.GetCache()
+	for _, key := range cache.Keys() {
+		val, _ := cache.Get(key)
+		err := db.SetMediaFile(val)
+		if err != nil {
+			logger.Log.Error("could not save state to database", "error", err.Error())
+			return
+		}
+	}
+
+	if err := db.Close(); err != nil {
+		logger.Log.Error("could not close database", "error", err.Error())
+		return
 	}
 }
 
