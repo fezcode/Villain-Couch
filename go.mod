@@ -1,4 +1,4 @@
-module vlc-tracker-agent
+module villian-couch
 
 go 1.25
 

@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
-	"vlc-tracker-agent/common/globals"
-	"vlc-tracker-agent/common/logger"
-	"vlc-tracker-agent/common/step"
+	"villian-couch/common/globals"
+	"villian-couch/common/logger"
+	"villian-couch/common/step"
 )
 
 //go:embed config.json

@@ -5,8 +5,8 @@ import (
 	_ "embed"
 	"fmt"
 	"time"
-	"vlc-tracker-agent/agent/src/models"
-	"vlc-tracker-agent/common/logger"
+	"villian-couch/agent/src/models"
+	"villian-couch/common/logger"
 
 	_ "modernc.org/sqlite"
 )

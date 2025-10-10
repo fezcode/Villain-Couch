@@ -7,13 +7,14 @@ import (
 	"runtime"
 	"syscall"
 	"time"
-	"vlc-tracker-agent/agent/src/bootstrap"
-	"vlc-tracker-agent/agent/src/config"
-	mediaplayer "vlc-tracker-agent/agent/src/media-player"
-	"vlc-tracker-agent/agent/src/models"
-	"vlc-tracker-agent/agent/src/options"
-	"vlc-tracker-agent/agent/src/storage"
-	"vlc-tracker-agent/common/logger"
+
+	"villian-couch/agent/src/bootstrap"
+	"villian-couch/agent/src/config"
+	mediaplayer "villian-couch/agent/src/media-player"
+	"villian-couch/agent/src/models"
+	"villian-couch/agent/src/options"
+	"villian-couch/agent/src/storage"
+	"villian-couch/common/logger"
 )
 
 func main() {

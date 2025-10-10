@@ -8,13 +8,13 @@ import (
 	"net/url"
 	"os"
 	"time"
-	"vlc-tracker-agent/agent/src/cli"
-	"vlc-tracker-agent/agent/src/config"
-	"vlc-tracker-agent/agent/src/models"
-	"vlc-tracker-agent/agent/src/options"
-	"vlc-tracker-agent/common/encoding"
-	"vlc-tracker-agent/common/logger"
-	re "vlc-tracker-agent/common/regex"
+	"villian-couch/agent/src/cli"
+	"villian-couch/agent/src/config"
+	"villian-couch/agent/src/models"
+	"villian-couch/agent/src/options"
+	"villian-couch/common/encoding"
+	"villian-couch/common/logger"
+	re "villian-couch/common/regex"
 )
 
 type MediaPlayer interface {

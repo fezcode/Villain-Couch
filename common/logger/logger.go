@@ -44,10 +44,16 @@ func (h *FuncHandler) Handle(ctx context.Context, r slog.Record) error {
 var Log *slog.Logger
 
 // The init function runs automatically when the package is first imported.
-func Initialize() {
+func Initialize(verbose bool) {
+	var level slog.Leveler = slog.LevelWarn
+	if verbose {
+		level = slog.LevelDebug
+	}
+	opts := &slog.HandlerOptions{Level: level}
+
 	// Create our custom handler, wrapping the default JSON handler.
 	handler := &FuncHandler{
-		Handler: slog.NewJSONHandler(os.Stderr, nil),
+		Handler: slog.NewJSONHandler(os.Stderr, opts),
 	}
 
 	// Create a new logger with our custom handler and assign it to the global variable.

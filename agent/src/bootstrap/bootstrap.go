@@ -2,16 +2,16 @@ package bootstrap
 
 import (
 	"os"
-	"vlc-tracker-agent/agent/src/cli"
-	"vlc-tracker-agent/agent/src/config"
-	"vlc-tracker-agent/agent/src/options"
-	"vlc-tracker-agent/agent/src/storage"
-	"vlc-tracker-agent/common/logger"
+	"villian-couch/agent/src/cli"
+	"villian-couch/agent/src/config"
+	"villian-couch/agent/src/options"
+	"villian-couch/agent/src/storage"
+	"villian-couch/common/logger"
 )
 
 func Bootstrap() {
-	logger.Initialize()
 	cli.Initialize()
+	logger.Initialize(cli.GetFlags().Verbose)
 	if err := config.Initialize(); err != nil {
 		logger.Log.Error(err.Error(), "msg", "Error setting up config.")
 		os.Exit(1)

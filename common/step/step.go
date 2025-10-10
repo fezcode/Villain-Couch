@@ -2,8 +2,8 @@ package step
 
 import (
 	"fmt"
-	"vlc-tracker-agent/common/logger"
-	"vlc-tracker-agent/common/runtime"
+	"villian-couch/common/logger"
+	"villian-couch/common/runtime"
 )
 
 type Step struct {

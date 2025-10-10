@@ -5,13 +5,13 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"vlc-tracker-agent/agent/src/cli"
-	"vlc-tracker-agent/agent/src/config"
-	"vlc-tracker-agent/agent/src/registry"
-	"vlc-tracker-agent/agent/src/storage"
-	"vlc-tracker-agent/common/globals"
-	"vlc-tracker-agent/common/logger"
-	"vlc-tracker-agent/common/step"
+	"villian-couch/agent/src/cli"
+	"villian-couch/agent/src/config"
+	"villian-couch/agent/src/registry"
+	"villian-couch/agent/src/storage"
+	"villian-couch/common/globals"
+	"villian-couch/common/logger"
+	"villian-couch/common/step"
 )
 
 type Options struct {

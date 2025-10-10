@@ -2,21 +2,20 @@ package cli
 
 import (
 	"flag"
-	"vlc-tracker-agent/common/logger"
 )
 
 type CLIFlags struct {
 	Continue  bool
+	Verbose   bool
 	MediaFile string
 }
 
 var cliFlags *CLIFlags
 
 func Initialize() {
-	logger.Log.Info("Initializing Flags")
-
 	a := CLIFlags{}
 	flag.BoolVar(&a.Continue, "continue", false, "continue where you left off")
+	flag.BoolVar(&a.Verbose, "verbose", false, "prints info level logs")
 	flag.StringVar(&a.MediaFile, "file", "", "media file to play")
 	flag.Parse()
 	cliFlags = &a
