@@ -1,0 +1,7 @@
+{
+  "web_url": "http://localhost",
+  "status_endpoint": "requests/status.json",
+  "http_port": "9713",
+  "extra_intf": "http",
+  "http_password": "my_secret_password"
+}
