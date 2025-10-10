@@ -17,7 +17,7 @@ func Bootstrap() {
 		os.Exit(1)
 	}
 
-	if err := options.Initialize(cli.GetFlags()); err != nil {
+	if err := options.Initialize(cli.GetFlags(), config.GetConfig()); err != nil {
 		logger.Log.Error(err.Error(), "msg", "Error setting up options.")
 		os.Exit(1)
 	}

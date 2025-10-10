@@ -7,10 +7,11 @@ import (
 	"strconv"
 	"villian-couch/agent/src/cli"
 	"villian-couch/agent/src/config"
-	"villian-couch/agent/src/registry"
+	"villian-couch/agent/src/resolver"
 	"villian-couch/agent/src/storage"
 	"villian-couch/common/globals"
 	"villian-couch/common/logger"
+	"villian-couch/common/optional"
 	"villian-couch/common/step"
 )
 
@@ -56,30 +57,32 @@ func ValidateOptions() {
 	}
 }
 
-func Initialize(fl *cli.CLIFlags) error {
+func Initialize(fl *cli.CLIFlags, conf *config.Config) error {
 	opts = &Options{}
 	steps := []step.Step{
-		{F: putVLCPath},
+		{F: putVLCPath, P: &conf.VLCPath},
 		{F: putDatabasePath},
 		{F: putMediaFilePath, P: &fl.MediaFile},
 	}
 	return step.RunSteps(steps)
 }
 
-func putVLCPath(...string) error {
-	location, found, err := registry.GetVLCInstallLocation()
+func putVLCPath(p ...string) error {
+	optionalVLCPath := optional.FirstOrEmpty(p)
+	location, found, err := resolver.GetVLCInstallLocation(optionalVLCPath)
 	if err != nil {
-		logger.Log.Error("could not read registry", "error", err)
+		logger.Log.Error("could not get VLC location", "error", err)
 		return err
 	}
 
 	if !found {
 		logger.Log.Error("could not find media player install location")
 		logger.Log.Warn("INSTALL VLC")
+		logger.Log.Warn("INSTALL VLC")
 		os.Exit(1)
 	}
 
-	opts.VLCPath = filepath.Join(location, "vlc.exe")
+	opts.VLCPath = location
 	return nil
 }
 

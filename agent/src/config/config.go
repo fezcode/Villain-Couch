@@ -28,6 +28,8 @@ type Config struct {
 	ExtraIntf        string `json:"extra_intf"`
 	HttpPassword     string `json:"http_password"`
 	DatabaseFileName string `json:"database_file_name"`
+	// For Linuxers
+	VLCPath string `json:"vlc_path"`
 }
 
 // setupConfig ensures the required configuration directory and the config file exist.
