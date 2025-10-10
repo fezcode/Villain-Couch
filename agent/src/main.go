@@ -19,23 +19,21 @@ func main() {
 
 	conf := config.GetConfig()
 	flags := cli.GetFlags()
-	x := cli.PrepareRunnerArguments(conf.VlcPath, flags.MediaFile, conf.ExtraIntf, conf.HttpPort, conf.HttpPassword)
-	cmdRunner := cli.NewCommandForVLC(x)
-	vlc := mediaplayer.New(conf)
+	vlc := mediaplayer.New(conf, flags)
 
 	logger.Log.Info("Starting Villain Couch [VLC Tracker]")
-	if err := cmdRunner.Start(); err != nil {
+	if err := vlc.CommandRunner.Start(); err != nil {
 		logger.Log.Error("Failed to start command", "error", err)
 		os.Exit(1)
 	}
 
-	// --- Graceful Shutdown Setup ---
+	// Graceful Shutdown Setup
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 
 	for {
 		select {
-		case err := <-cmdRunner.Done():
+		case err := <-vlc.CommandRunner.Done():
 			// The Done channel is closed, and the final error state is received.
 			if err != nil {
 				// The error "signal: interrupt" is expected here because we stopped it.
@@ -48,23 +46,24 @@ func main() {
 			logger.Log.Info("Received signal, initiating graceful shutdown.", "signal", sig.String())
 
 			// Stop the background process.
-			if err := cmdRunner.Stop(); err != nil {
+			if err := vlc.CommandRunner.Stop(); err != nil {
 				logger.Log.Error("Failed to send stop signal to command", "error", err)
 			}
 
 			// Wait for the command to fully terminate.
-			<-cmdRunner.Done()
+			<-vlc.CommandRunner.Done()
 			logger.Log.Info("Background command stopped successfully.")
 
 		case <-time.After(5 * time.Second):
 			// This case executes if the Done channel is not ready yet.
-			logger.Log.Info("...still waiting for process to terminate...")
+			// logger.Log.Info("...still waiting for process to terminate...")
 			// You can perform other periodic tasks here.
 			status, err := vlc.Status()
 			if err != nil {
 				logger.Log.Error("VLC GetStatus Error", "error", err)
 				// ignore error
 			}
+
 			vlc.PrintStatus(status)
 		}
 	}

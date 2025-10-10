@@ -24,7 +24,7 @@ func New(name string, arg ...string) *CommandRunner {
 	}
 }
 
-func NewCommandForVLC(args VLCRunnerArguments) *CommandRunner {
+func NewCommandRunnerForVLC(args VLCRunnerArguments) *CommandRunner {
 	return &CommandRunner{
 		cmd: PrepareVLCCommand(args),
 	}

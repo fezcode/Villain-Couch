@@ -5,31 +5,34 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+	"vlc-tracker-agent/agent/src/cli"
 	"vlc-tracker-agent/agent/src/config"
 	"vlc-tracker-agent/agent/src/models"
 	"vlc-tracker-agent/common/logger"
 )
 
 type VLCMediaPlayer struct {
+	Args           cli.VLCRunnerArguments
+	CommandRunner  *cli.CommandRunner
 	StatusEndpoint string
-	Password       string
 }
 
 type MediaPlayer interface {
-	Build(conf *config.Config)
+	Build(conf *config.Config, flags *cli.CLIFlags)
 	Status()
 	PrintStatus(models.StatusMessage)
 }
 
-func New(conf *config.Config) VLCMediaPlayer {
+func New(conf *config.Config, flags *cli.CLIFlags) VLCMediaPlayer {
 	vlc := VLCMediaPlayer{}
-	vlc.Build(conf)
+	vlc.Build(conf, flags)
 	return vlc
 }
 
-func (vlc *VLCMediaPlayer) Build(conf *config.Config) {
+func (vlc *VLCMediaPlayer) Build(conf *config.Config, flags *cli.CLIFlags) {
+	vlc.Args = cli.PrepareRunnerArguments(conf.VlcPath, flags.MediaFile, conf.ExtraIntf, conf.HttpPort, conf.HttpPassword)
+	vlc.CommandRunner = cli.NewCommandRunnerForVLC(vlc.Args)
 	vlc.StatusEndpoint = fmt.Sprintf("%s:%s/%s", conf.WebUrl, conf.HttpPort, conf.StatusEndpoint)
-	vlc.Password = conf.HttpPassword
 }
 
 func (vlc *VLCMediaPlayer) Status() (models.StatusMessage, error) {
@@ -43,7 +46,7 @@ func (vlc *VLCMediaPlayer) Status() (models.StatusMessage, error) {
 		return status, err
 	}
 
-	req.SetBasicAuth(user, vlc.Password)
+	req.SetBasicAuth(user, vlc.Args.HttpPassword)
 
 	res, err := client.Do(req)
 	if err != nil {
