@@ -164,7 +164,7 @@ func (vlc *VLCMediaPlayer) TryNext(currentFilepath string) error {
 
 	// Check if the media file exists before trying to launch VLC.
 	if _, err := os.Stat(nextEpisodeName); os.IsNotExist(err) {
-		logger.Log.Warn("Media file not found, exiting", "Media File", nextEpisodeName)
+		logger.Log.Warn("Media file not found", "Media File", nextEpisodeName)
 		return ErrorMediaFileNotFound
 	}
 
