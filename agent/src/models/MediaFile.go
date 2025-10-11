@@ -22,3 +22,7 @@ func NewMediaFileFromStatus(v StatusMessage, s string) MediaFile {
 		UpdatedAt:     time.Now(),
 	}
 }
+
+func (mf MediaFile) IsEmpty() bool {
+	return mf.Filepath == ""
+}

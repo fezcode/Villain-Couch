@@ -26,6 +26,10 @@ type MediaPlayer interface {
 	LogStatus(s models.StatusMessage)
 }
 
+var (
+	ErrorMediaFileNotFound = errors.New("media file not found")
+)
+
 type VLCMediaPlayer struct {
 	Args             cli.VLCRunnerArguments
 	CommandRunner    *cli.CommandRunner
@@ -147,9 +151,12 @@ func (vlc *VLCMediaPlayer) PlayFile(filepath string) error {
 	return nil
 }
 
+// TryNext can return following errors
+// 1. Next episode name is in wrong format
+// 2. Next episode media file not found
+// 3. VLC API Error (PlayFile)
 func (vlc *VLCMediaPlayer) TryNext(currentFilepath string) error {
 	nextEpisodeName, ok := re.GetNextEpisodeFilename(currentFilepath)
-
 	if !ok {
 		logger.Log.Error("could not find next episode filename", "current", currentFilepath)
 		return fmt.Errorf("could not find next episode filename")
@@ -158,11 +165,10 @@ func (vlc *VLCMediaPlayer) TryNext(currentFilepath string) error {
 	// Check if the media file exists before trying to launch VLC.
 	if _, err := os.Stat(nextEpisodeName); os.IsNotExist(err) {
 		logger.Log.Warn("Media file not found, exiting", "Media File", nextEpisodeName)
-		return errors.New("media file not found, exiting")
+		return ErrorMediaFileNotFound
 	}
 
 	return vlc.PlayFile(nextEpisodeName)
-
 }
 
 func (vlc *VLCMediaPlayer) LogStatus(s models.StatusMessage) {

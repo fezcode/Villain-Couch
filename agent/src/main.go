@@ -1,14 +1,16 @@
 package main
 
 import (
+	"errors"
 	"os"
 	"os/exec"
 	"os/signal"
 	"runtime"
 	"syscall"
 	"time"
-
 	"villian-couch/agent/src/bootstrap"
+	"villian-couch/agent/src/cli"
+	"villian-couch/agent/src/cli/operations"
 	"villian-couch/agent/src/config"
 	mediaplayer "villian-couch/agent/src/media-player"
 	"villian-couch/agent/src/models"
@@ -19,18 +21,20 @@ import (
 
 func main() {
 	bootstrap.Bootstrap()
-	vlc := mediaplayer.New(config.GetConfig(), options.GetOptions())
+	flags, db, opts, conf := cli.GetFlags(), storage.GetDB(), options.GetOptions(), config.GetConfig()
+	operations.New().Build(flags, db, opts).Run().Finalize()
+	vlc := mediaplayer.New(conf, opts)
+	run(&vlc, opts)
+}
 
-	logger.Log.Info("Starting VilLain Couch [VLC Tracker]")
+func run(vlc *mediaplayer.VLCMediaPlayer, opts *options.Options) {
+	logger.Log.Info("------ Starting VilLain Couch [VLC Tracker] ------")
+
 	if err := vlc.CommandRunner.Start(); err != nil {
 		logger.Log.Error("Failed to start command", "error", err)
 		os.Exit(1)
 	}
 
-	run(&vlc)
-}
-
-func run(vlc *mediaplayer.VLCMediaPlayer) {
 	// Graceful Shutdown Setup
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
@@ -64,12 +68,12 @@ func run(vlc *mediaplayer.VLCMediaPlayer) {
 
 		case <-time.After(500 * time.Millisecond):
 			// This case executes if the Done channel is not ready yet.
-			handleTick(vlc)
+			handleTick(vlc, opts)
 		}
 	}
 }
 
-func handleTick(vlc *mediaplayer.VLCMediaPlayer) {
+func handleTick(vlc *mediaplayer.VLCMediaPlayer, opts *options.Options) {
 	status, err := vlc.Status()
 	if err != nil {
 		logger.Log.Error("VLC GetStatus Error", "error", err)
@@ -96,14 +100,24 @@ func handleTick(vlc *mediaplayer.VLCMediaPlayer) {
 		saveMediaStates()
 		storage.GetCache().Delete(currentFilepath)
 		if err := vlc.TryNext(currentFilepath); err != nil {
-			logger.Log.Warn("cannot play next file", "error", err)
-			_ = vlc.CommandRunner.Stop()
+			if errors.Is(err, mediaplayer.ErrorMediaFileNotFound) {
+				if opts.FuzzyFoundNextEpisode != "" {
+					err := vlc.PlayFile(opts.FuzzyFoundNextEpisode)
+					if err != nil {
+						logger.Log.Error("VLC PlayFile Error on Fuzzy Found Next Episode", "error", err, "path", opts.FuzzyFoundNextEpisode)
+						_ = vlc.CommandRunner.Stop()
+					}
+				}
+			} else {
+				logger.Log.Warn("cannot play next file", "error", err)
+				_ = vlc.CommandRunner.Stop()
+			}
+
 		}
 	} else {
 		mf := models.NewMediaFileFromStatus(status, currentFilepath)
 		storage.GetCache().Set(mf.Filepath, mf)
 	}
-
 }
 
 func saveMediaStates() {
@@ -111,6 +125,10 @@ func saveMediaStates() {
 	db := storage.GetDB()
 	cache := storage.GetCache()
 	for _, key := range cache.Keys() {
+		// If empty filepath then do not add it to db
+		if key == "" {
+			continue
+		}
 		val, _ := cache.Get(key)
 		err := db.SetMediaFile(val)
 		if err != nil {

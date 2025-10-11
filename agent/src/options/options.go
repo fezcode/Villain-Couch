@@ -17,10 +17,11 @@ import (
 
 type Options struct {
 	// Generated Ones
-	VLCPath            string
-	DatabaseFilePath   string
-	MediaFilePath      string
-	MediaFileStartTime string
+	VLCPath               string
+	DatabaseFilePath      string
+	MediaFilePath         string
+	MediaFileStartTime    string
+	FuzzyFoundNextEpisode string
 }
 
 var opts *Options
@@ -29,6 +30,7 @@ func GetOptions() *Options {
 	return opts
 }
 
+// Sets additional options after initalization
 func SetOptions(db *storage.DB) error {
 	if opts.MediaFilePath == "" {
 		file, err := db.GetLatestUpdatedMediaFile()
@@ -60,9 +62,9 @@ func ValidateOptions() {
 func Initialize(fl *cli.CLIFlags, conf *config.Config) error {
 	opts = &Options{}
 	steps := []step.Step{
-		{F: putVLCPath, P: &conf.VLCPath},
+		{F: putVLCPath, P: conf.VLCPath},
 		{F: putDatabasePath},
-		{F: putMediaFilePath, P: &fl.MediaFile},
+		{F: putMediaFilePath, P: fl.MediaFile.String()},
 	}
 	return step.RunSteps(steps)
 }

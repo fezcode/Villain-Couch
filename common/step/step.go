@@ -8,7 +8,7 @@ import (
 
 type Step struct {
 	F func(param ...string) error
-	P *string
+	P string
 }
 
 //// Step is a function type representing a single step in a process.
@@ -18,11 +18,7 @@ type Step struct {
 func RunSteps(steps []Step) error {
 	location, _ := runtime.GetCallerGrandparent()
 	for i, step := range steps {
-		p := ""
-		if step.P != nil {
-			p = *step.P
-		}
-		if err := step.F(p); err != nil {
+		if err := step.F(step.P); err != nil {
 			logger.Log.Error(err.Error(), "location", location, "step", i)
 			return fmt.Errorf("could not run step %d: %w", i, err)
 		}
