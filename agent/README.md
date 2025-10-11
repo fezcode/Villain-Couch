@@ -70,6 +70,8 @@ To run the agent, use the following command:
 
 - `--verbose`: Enable verbose logging.
 - `--file <media-file>`: Specify a media file to play.
+- `--ws <directory>`: Adds given directory as workspace to find possible next episodes using `find-next` flag.
+- `--find-next`: Try to find next episode in workspace.
 
 ### Examples
 
