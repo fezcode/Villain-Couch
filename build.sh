@@ -7,7 +7,7 @@
 set -e
 
 # --- Configuration ---
-BINARY_NAME="villian_couch"
+BINARY_NAME="villain_couch"
 
 # --- Build Steps ---
 
@@ -46,10 +46,10 @@ echo "=> Building the application..."
 # The '-s -w' flags strip debug information, making the binary smaller.
 #go build -o "${BINARY_NAME}" -ldflags="-s -w -X 'main.version=${VERSION}'" .
 
-GOOS=darwin GOARCH=arm64 go build -o ./bin/villian_couch_dawin_arm64 ./agent/src/
-GOOS=darwin GOARCH=amd64 go build -o ./bin/villian_couch_dawin_amd64 ./agent/src/
-chmod +x ./bin/villian_couch_dawin_arm64
-chmod +x ./bin/villian_couch_dawin_amd64
+GOOS=darwin GOARCH=arm64 go build -o ./bin/villain_couch_dawin_arm64 ./agent/src/
+GOOS=darwin GOARCH=amd64 go build -o ./bin/villain_couch_dawin_amd64 ./agent/src/
+chmod +x ./bin/villain_couch_dawin_arm64
+chmod +x ./bin/villain_couch_dawin_amd64
 
 # 7. Make the resulting binary executable.
 #chmod +x "${BINARY_NAME}"

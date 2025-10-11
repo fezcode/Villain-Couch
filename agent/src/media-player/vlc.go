@@ -8,13 +8,13 @@ import (
 	"net/url"
 	"os"
 	"time"
-	"villian-couch/agent/src/cli"
-	"villian-couch/agent/src/config"
-	"villian-couch/agent/src/models"
-	"villian-couch/agent/src/options"
-	"villian-couch/common/encoding"
-	"villian-couch/common/logger"
-	re "villian-couch/common/regex"
+	"villain-couch/agent/src/cli"
+	"villain-couch/agent/src/config"
+	"villain-couch/agent/src/models"
+	"villain-couch/agent/src/options"
+	"villain-couch/common/encoding"
+	"villain-couch/common/logger"
+	re "villain-couch/common/regex"
 )
 
 type MediaPlayer interface {

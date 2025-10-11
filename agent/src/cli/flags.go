@@ -2,7 +2,7 @@ package cli
 
 import (
 	"flag"
-	"villian-couch/common/str"
+	"villain-couch/common/str"
 )
 
 type CLIFlags struct {

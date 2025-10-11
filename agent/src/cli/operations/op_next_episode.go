@@ -3,9 +3,9 @@ package operations
 import (
 	"errors"
 	"fmt"
-	"villian-couch/common/ff"
-	"villian-couch/common/logger"
-	"villian-couch/common/optional"
+	"villain-couch/common/ff"
+	"villain-couch/common/logger"
+	"villain-couch/common/optional"
 )
 
 type NextEpisode struct {

@@ -3,7 +3,7 @@ package resolver
 import (
 	"fmt"
 	"runtime"
-	"villian-couch/common/fs"
+	"villain-couch/common/fs"
 )
 
 // GetVLCInstallLocation checks for VLC in the registry.

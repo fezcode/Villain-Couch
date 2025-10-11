@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
-	"villian-couch/common/globals"
-	"villian-couch/common/logger"
-	"villian-couch/common/step"
+	"villain-couch/common/globals"
+	"villain-couch/common/logger"
+	"villain-couch/common/step"
 )
 
 //go:embed config.json

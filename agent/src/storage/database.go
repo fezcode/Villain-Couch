@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"time"
-	"villian-couch/agent/src/models"
-	"villian-couch/common/logger"
+	"villain-couch/agent/src/models"
+	"villain-couch/common/logger"
 
 	_ "modernc.org/sqlite"
 )

@@ -2,11 +2,11 @@ package bootstrap
 
 import (
 	"os"
-	"villian-couch/agent/src/cli"
-	"villian-couch/agent/src/config"
-	"villian-couch/agent/src/options"
-	"villian-couch/agent/src/storage"
-	"villian-couch/common/logger"
+	"villain-couch/agent/src/cli"
+	"villain-couch/agent/src/config"
+	"villain-couch/agent/src/options"
+	"villain-couch/agent/src/storage"
+	"villain-couch/common/logger"
 )
 
 func Bootstrap() {

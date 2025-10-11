@@ -1,8 +1,8 @@
 package storage
 
 import (
-	"villian-couch/agent/src/models"
-	"villian-couch/common/logger"
+	"villain-couch/agent/src/models"
+	"villain-couch/common/logger"
 )
 
 // Database

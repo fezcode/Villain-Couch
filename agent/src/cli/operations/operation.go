@@ -1,8 +1,8 @@
 package operations
 
 import (
-	"villian-couch/agent/src/options"
-	"villian-couch/agent/src/storage"
+	"villain-couch/agent/src/options"
+	"villain-couch/agent/src/storage"
 )
 
 type Runnable interface {

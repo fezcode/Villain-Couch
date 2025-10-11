@@ -16,20 +16,20 @@ To build the agent, you need to have Go installed on your system.
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/villian-couch.git
+   git clone https://github.com/your-username/villain-couch.git
    ```
 
 2. **Navigate to the agent directory:**
    ```bash
-   cd villian-couch/agent
+   cd villain-couch/agent
    ```
 
 3. **Build the agent:**
    ```bash
-   go build -o villian-couch ./src
+   go build -o villain-couch ./src
    ```
 
-This will create a `villian-couch` executable in the `agent` directory.
+This will create a `villain-couch` executable in the `agent` directory.
 
 ## Configuration
 
@@ -63,7 +63,7 @@ The default configuration looks like this:
 To run the agent, use the following command:
 
 ```bash
-./villian-couch [flags]
+./villain-couch [flags]
 ```
 
 ### Flags
@@ -77,12 +77,12 @@ To run the agent, use the following command:
 
 - **Start tracking and play a media file:**
   ```bash
-  ./villian-couch --file /path/to/your/media.mp4
+  ./villain-couch --file /path/to/your/media.mp4
   ```
 
 - **Enable verbose logging:**
   ```bash
-  ./villian-couch --verbose --file /path/to/your/media.mp4
+  ./villain-couch --verbose --file /path/to/your/media.mp4
   ```
 
 ## Development

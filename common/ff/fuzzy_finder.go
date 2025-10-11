@@ -64,7 +64,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"villian-couch/common/logger"
+	"villain-couch/common/logger"
 )
 
 // Enhanced regex to capture Show Name (Group 1), Season (Group 3), and Episode (Group 5).
