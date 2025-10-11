@@ -12,6 +12,10 @@ type NextEpisode struct {
 	Operation
 }
 
+func (a NextEpisode) Priority() int {
+	return OrderMedium
+}
+
 func (a NextEpisode) Finalize() {}
 
 func (a NextEpisode) DefaultError() string {

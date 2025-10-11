@@ -16,6 +16,10 @@ type AddWorkspace struct {
 	AlreadyExists    bool
 }
 
+func (a AddWorkspace) Priority() int {
+	return OrderMedium
+}
+
 func (a AddWorkspace) DefaultError() string {
 	return fmt.Sprintf("Cannot run %s operation", a.Name())
 }

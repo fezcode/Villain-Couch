@@ -22,7 +22,7 @@ import (
 func main() {
 	bootstrap.Bootstrap()
 	flags, db, opts, conf := cli.GetFlags(), storage.GetDB(), options.GetOptions(), config.GetConfig()
-	operations.New().Build(flags, db, opts).Run().Finalize()
+	operations.New().Build(flags, db, opts).Sort().Run().Finalize() // What in the Java...
 	vlc := mediaplayer.New(conf, opts)
 	run(&vlc, opts)
 }

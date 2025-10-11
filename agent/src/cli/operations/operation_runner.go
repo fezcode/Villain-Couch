@@ -3,6 +3,8 @@ package operations
 import (
 	"os"
 	"path/filepath"
+	"sort"
+	"villain-couch/agent/src/app_info"
 	"villain-couch/agent/src/cli"
 	"villain-couch/agent/src/options"
 	"villain-couch/agent/src/storage"
@@ -44,6 +46,17 @@ func (opr *OperationRunner) Build(cliFlags *cli.CLIFlags, db *storage.DB, opts *
 		r := NextEpisode{Operation: opBasics}
 		opr.Add(r)
 	}
+	if cliFlags.Version {
+		r := PrintVersion{Version: app_info.VersionInfo}
+		opr.Add(r)
+	}
+	return opr
+}
+
+func (opr *OperationRunner) Sort() *OperationRunner {
+	sort.SliceStable(opr.ops, func(i, j int) bool {
+		return opr.ops[i].Priority() > opr.ops[j].Priority()
+	})
 	return opr
 }
 
