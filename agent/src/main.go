@@ -107,6 +107,10 @@ func handleTick(vlc *mediaplayer.VLCMediaPlayer, opts *options.Options) {
 						logger.Log.Error("VLC PlayFile Error on Fuzzy Found Next Episode", "error", err, "path", opts.FuzzyFoundNextEpisode)
 						_ = vlc.CommandRunner.Stop()
 					}
+				} else {
+					// in macOS we need to handle this as well
+					logger.Log.Warn("cannot play next file", "error", err)
+					_ = vlc.CommandRunner.Stop()
 				}
 			} else {
 				logger.Log.Warn("cannot play next file", "error", err)
