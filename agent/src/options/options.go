@@ -45,7 +45,13 @@ func SetOptions(db *storage.DB) error {
 		}
 
 		opts.MediaFilePath = file.Filepath
-		opts.MediaFileStartTime = strconv.Itoa(file.CurrentSecond)
+		seconds := "0"
+		if file.CurrentSecond >= file.TotalSeconds {
+			seconds = strconv.Itoa(file.TotalSeconds - 1)
+		} else {
+			seconds = strconv.Itoa(file.CurrentSecond)
+		}
+		opts.MediaFileStartTime = seconds
 	}
 
 	return nil
