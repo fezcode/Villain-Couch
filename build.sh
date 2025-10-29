@@ -46,10 +46,17 @@ echo "=> Building the application..."
 # The '-s -w' flags strip debug information, making the binary smaller.
 #go build -o "${BINARY_NAME}" -ldflags="-s -w -X 'main.version=${VERSION}'" .
 
+echo "--- Starting macOS Build for '${BINARY_NAME}' ---"
 GOOS=darwin GOARCH=arm64 go build -o ./bin/villain_couch_dawin_arm64 ./agent/src/
 GOOS=darwin GOARCH=amd64 go build -o ./bin/villain_couch_dawin_amd64 ./agent/src/
 chmod +x ./bin/villain_couch_dawin_arm64
 chmod +x ./bin/villain_couch_dawin_amd64
+
+echo "--- Starting Linux Build for '${BINARY_NAME}' ---"
+GOOS=linux GOARCH=amd64 go build -o ./bin/villain_couch_linux_amd64 ./agent/src/
+GOOS=linux GOARCH=arm64 go build -o ./bin/villain_couch_linux_arm64 ./agent/src/
+chmod +x ./bin/villain_couch_linux_amd64
+chmod +x ./bin/villain_couch_linux_arm64
 
 # 7. Make the resulting binary executable.
 #chmod +x "${BINARY_NAME}"
