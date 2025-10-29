@@ -148,6 +148,42 @@ func (vlc *VLCMediaPlayer) PlayFile(filepath string) error {
 		return fmt.Errorf("VLC returned non-200 status: %s", resp.Status)
 	}
 
+	logger.Log.Info("played file", "file", filepath)
+
+	err = vlc.SeekSecond("1")
+	if err != nil {
+		logger.Log.Error("could not seek second", "error", err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (vlc *VLCMediaPlayer) SeekSecond(second string) error {
+	client := &http.Client{Timeout: 3 * time.Second}
+
+	requestURL := fmt.Sprintf("%s?command=seek&val=%s", vlc.StatusEndpoint, second)
+
+	req, err := http.NewRequest("GET", requestURL, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.SetBasicAuth("", vlc.Args.HttpPassword)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		logger.Log.Error("could not connect to VLC's web interface", "error", err.Error())
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("VLC returned non-200 status: %s", resp.Status)
+	}
+
+	logger.Log.Info("seeked", "second", second)
+
 	return nil
 }
 

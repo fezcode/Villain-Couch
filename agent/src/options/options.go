@@ -45,9 +45,9 @@ func SetOptions(db *storage.DB) error {
 		}
 
 		opts.MediaFilePath = file.Filepath
-		seconds := "0"
+		seconds := "1"
 		if file.CurrentSecond >= file.TotalSeconds {
-			seconds = strconv.Itoa(file.TotalSeconds - 1)
+			seconds = strconv.Itoa(file.TotalSeconds - 10)
 		} else {
 			seconds = strconv.Itoa(file.CurrentSecond)
 		}
