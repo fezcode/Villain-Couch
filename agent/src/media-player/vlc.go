@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"time"
 	"villain-couch/agent/src/cli"
 	"villain-couch/agent/src/config"
@@ -116,9 +117,9 @@ func (vlc *VLCMediaPlayer) Playlist() (models.PlaylistMessage, error) {
 	return &playlist, nil
 }
 
-func (vlc *VLCMediaPlayer) PlayFile(filepath string) error {
+func (vlc *VLCMediaPlayer) PlayFile(filepathStr string) error {
 	// 1. Convert the OS-specific file path to a valid URI.
-	uri := encoding.FormatFileURI(filepath)
+	uri := encoding.FormatFileURI(filepathStr)
 	const user = ""
 	client := &http.Client{Timeout: 3 * time.Second}
 
@@ -148,8 +149,32 @@ func (vlc *VLCMediaPlayer) PlayFile(filepath string) error {
 		return fmt.Errorf("VLC returned non-200 status: %s", resp.Status)
 	}
 
-	logger.Log.Info("played file", "file", filepath)
+	logger.Log.Info("played file", "file", filepathStr)
 
+	// Wait for VLC to actually switch to the new file
+	targetFilename := filepath.Base(filepathStr)
+	timeout := time.After(5 * time.Second)
+	ticker := time.NewTicker(200 * time.Millisecond)
+	defer ticker.Stop()
+
+	// Loop to wait for the file to be loaded
+	for {
+		select {
+		case <-timeout:
+			logger.Log.Warn("Timeout waiting for VLC to load new file", "file", targetFilename)
+			goto Seek
+		case <-ticker.C:
+			status, err := vlc.Status()
+			if err == nil {
+				// We check if the filename matches and if the state is playing
+				if status.GetFilename() == targetFilename && status.GetState() == "playing" {
+					goto Seek
+				}
+			}
+		}
+	}
+
+Seek:
 	err = vlc.SeekSecond("1")
 	if err != nil {
 		logger.Log.Error("could not seek second", "error", err.Error())
