@@ -13,6 +13,7 @@ type StatusMessage interface {
 	GetTitle() string
 	GetEpisodeNumber() string
 	GetSeasonNumber() string
+	GetVolume() int
 }
 
 // VLCStatus defines the structure of the JSON response from VLC's status endpoint.
@@ -20,6 +21,7 @@ type VLCStatus struct {
 	State       string `json:"state"`
 	Time        int    `json:"time"`
 	Length      int    `json:"length"`
+	Volume      int    `json:"volume"`
 	Information struct {
 		Category struct {
 			Meta struct {
@@ -63,4 +65,8 @@ func (v VLCStatus) GetEpisodeNumber() string {
 
 func (v VLCStatus) GetSeasonNumber() string {
 	return v.Information.Category.Meta.SeasonNumber
+}
+
+func (v VLCStatus) GetVolume() int {
+	return v.Volume
 }

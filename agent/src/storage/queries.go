@@ -14,6 +14,9 @@ var queryGetMediaFile string
 //go:embed queries/getLatestMediaFile.sql
 var queryGetLatestMediaFile string
 
+//go:embed queries/getAllMediaFiles.sql
+var queryGetAllMediaFiles string
+
 //go:embed queries/setWorkspace.sql
 var querySetWorkspace string
 

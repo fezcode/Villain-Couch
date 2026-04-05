@@ -23,8 +23,14 @@ type MediaPlayer interface {
 	Status() (models.StatusMessage, error)
 	Playlist() (models.PlaylistMessage, error)
 	PlayFile(filepath string) error
-	TryNext() error
+	TryNext(currentFilepath string) error
 	LogStatus(s models.StatusMessage)
+	TogglePause() error
+	Stop() error
+	Seek(val string) error
+	Volume(val string) error
+	Next() error
+	Previous() error
 }
 
 var (
@@ -49,6 +55,61 @@ func (vlc *VLCMediaPlayer) Build(conf *config.Config, opts *options.Options) {
 	vlc.CommandRunner = cli.NewCommandRunnerForVLC(vlc.Args)
 	vlc.StatusEndpoint = fmt.Sprintf("%s:%s/%s", conf.WebUrl, conf.HttpPort, conf.StatusEndpoint)
 	vlc.PlaylistEndpoint = fmt.Sprintf("%s:%s/%s", conf.WebUrl, conf.HttpPort, conf.PlaylistEndpoint)
+}
+
+func (vlc *VLCMediaPlayer) sendCommand(command string, params map[string]string) error {
+	client := &http.Client{Timeout: 3 * time.Second}
+	u, err := url.Parse(vlc.StatusEndpoint)
+	if err != nil {
+		return err
+	}
+	q := u.Query()
+	q.Set("command", command)
+	for k, v := range params {
+		q.Set(k, v)
+	}
+	u.RawQuery = q.Encode()
+
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return err
+	}
+	req.SetBasicAuth("", vlc.Args.HttpPassword)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("VLC returned non-200 status: %s", resp.Status)
+	}
+	return nil
+}
+
+func (vlc *VLCMediaPlayer) TogglePause() error {
+	return vlc.sendCommand("pl_pause", nil)
+}
+
+func (vlc *VLCMediaPlayer) Stop() error {
+	return vlc.sendCommand("pl_stop", nil)
+}
+
+func (vlc *VLCMediaPlayer) Seek(val string) error {
+	return vlc.sendCommand("seek", map[string]string{"val": val})
+}
+
+func (vlc *VLCMediaPlayer) Volume(val string) error {
+	return vlc.sendCommand("volume", map[string]string{"val": val})
+}
+
+func (vlc *VLCMediaPlayer) Next() error {
+	return vlc.sendCommand("pl_next", nil)
+}
+
+func (vlc *VLCMediaPlayer) Previous() error {
+	return vlc.sendCommand("pl_previous", nil)
 }
 
 func (vlc *VLCMediaPlayer) Status() (models.StatusMessage, error) {
@@ -120,33 +181,11 @@ func (vlc *VLCMediaPlayer) Playlist() (models.PlaylistMessage, error) {
 func (vlc *VLCMediaPlayer) PlayFile(filepathStr string) error {
 	// 1. Convert the OS-specific file path to a valid URI.
 	uri := encoding.FormatFileURI(filepathStr)
-	const user = ""
-	client := &http.Client{Timeout: 3 * time.Second}
 
-	// 2. Construct the full URL with the correct command and input.
-	// The input parameter must be URL-encoded.
-	requestURL := fmt.Sprintf("%s?command=in_play&input=%s", vlc.StatusEndpoint, url.QueryEscape(uri))
-
-	// 3. Create the HTTP GET request.
-	req, err := http.NewRequest("GET", requestURL, nil)
+	// 2. Execute the request using sendCommand.
+	err := vlc.sendCommand("in_play", map[string]string{"input": uri})
 	if err != nil {
-		return fmt.Errorf("failed to create request: %w", err)
-	}
-
-	// 4. Set the Basic Authentication header. The username is blank.
-	req.SetBasicAuth(user, vlc.Args.HttpPassword)
-
-	// 5. Execute the request.
-	resp, err := client.Do(req)
-	if err != nil {
-		logger.Log.Error("could not connect to VLC's web interface", "error", err.Error())
 		return err
-	}
-	defer resp.Body.Close()
-
-	// 6. Check for a successful status code.
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("VLC returned non-200 status: %s", resp.Status)
 	}
 
 	logger.Log.Info("played file", "file", filepathStr)
@@ -175,39 +214,11 @@ func (vlc *VLCMediaPlayer) PlayFile(filepathStr string) error {
 	}
 
 Seek:
-	err = vlc.SeekSecond("1")
+	err = vlc.Seek("1")
 	if err != nil {
-		logger.Log.Error("could not seek second", "error", err.Error())
+		logger.Log.Error("could not seek", "error", err.Error())
 		return err
 	}
-
-	return nil
-}
-
-func (vlc *VLCMediaPlayer) SeekSecond(second string) error {
-	client := &http.Client{Timeout: 3 * time.Second}
-
-	requestURL := fmt.Sprintf("%s?command=seek&val=%s", vlc.StatusEndpoint, second)
-
-	req, err := http.NewRequest("GET", requestURL, nil)
-	if err != nil {
-		return fmt.Errorf("failed to create request: %w", err)
-	}
-
-	req.SetBasicAuth("", vlc.Args.HttpPassword)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		logger.Log.Error("could not connect to VLC's web interface", "error", err.Error())
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("VLC returned non-200 status: %s", resp.Status)
-	}
-
-	logger.Log.Info("seeked", "second", second)
 
 	return nil
 }

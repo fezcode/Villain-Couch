@@ -94,6 +94,25 @@ func (db *DB) GetLatestUpdatedMediaFile() (*models.MediaFile, error) {
 	return &mf, nil
 }
 
+func (db *DB) GetMediaHistory() ([]models.MediaFile, error) {
+	rows, err := db.conn.Query(queryGetAllMediaFiles)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var history []models.MediaFile
+	for rows.Next() {
+		var mf models.MediaFile
+		err := rows.Scan(&mf.Filepath, &mf.Filename, &mf.TotalSeconds, &mf.CurrentSecond, &mf.CreatedAt, &mf.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+		history = append(history, mf)
+	}
+	return history, nil
+}
+
 // InsertWorkspaces inserts or updates a record in the workspaces table.
 func (db *DB) InsertWorkspace(ws models.Workspace) error {
 	now := time.Now()

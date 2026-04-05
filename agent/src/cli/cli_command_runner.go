@@ -40,9 +40,9 @@ func (c *CommandRunner) Start() error {
 		return fmt.Errorf("command has already been started")
 	}
 
-	// Pipe the command's stdout and stderr to the parent process to see its output.
-	c.cmd.Stdout = os.Stdout
-	c.cmd.Stderr = os.Stderr
+	// Do not pipe the command's stdout and stderr to the parent process to avoid messing up the TUI.
+	c.cmd.Stdout = nil
+	c.cmd.Stderr = nil
 
 	if err := c.cmd.Start(); err != nil {
 		return fmt.Errorf("failed to start command: %w", err)
