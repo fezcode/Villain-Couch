@@ -1,27 +1,33 @@
-package main
+//go:build gobake
+package bake_recipe
 
 import (
 	"fmt"
 	"github.com/fezcode/gobake"
 )
 
-func Run() {
-	engine := gobake.New()
-	_ = engine.LoadRecipeInfo("recipe.piml")
+func Run(bake *gobake.Engine) error {
+	if err := bake.LoadRecipeInfo("recipe.piml"); err != nil {
+		return err
+	}
 
-	engine.Task("build", "Build the agent", func(ctx *gobake.Context) error {
-		ldflags := fmt.Sprintf("-X main.Version=%s", engine.Info.Version)
-		output := "bin/villain-couch.exe"
+	bake.Task("build", "Builds the binary for the agent", func(ctx *gobake.Context) error {
+		ldflags := fmt.Sprintf("-X main.Version=%s", bake.Info.Version)
+		output := "bin/" + bake.Info.Name + ".exe"
+
+		// Ensure bin/ exists
+		_ = ctx.Mkdir("bin")
+
 		return ctx.Run("go", "build", "-ldflags", ldflags, "-o", output, "./agent/src/")
 	})
 
-	engine.Task("test", "Run tests", func(ctx *gobake.Context) error {
+	bake.Task("test", "Runs tests", func(ctx *gobake.Context) error {
 		return ctx.Run("go", "test", "./...")
 	})
 
-	engine.Task("lint", "Run linter", func(ctx *gobake.Context) error {
+	bake.Task("lint", "Runs linter", func(ctx *gobake.Context) error {
 		return ctx.Run("golangci-lint", "run")
 	})
 
-	engine.Execute()
+	return nil
 }

@@ -22,7 +22,7 @@ func main() {
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
 		case "-v", "--version":
-			fmt.Printf("villain-couch v%s\n", Version)
+			fmt.Printf("villain.couch v%s\n", Version)
 			return
 		case "-h", "--help":
 			fmt.Println("Villain Couch - VLC Progress Tracker")
