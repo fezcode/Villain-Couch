@@ -2,26 +2,26 @@ package main
 
 import (
 	"fmt"
-	"github.com/thefezcodex/gobake/bake"
+	"github.com/fezcode/gobake"
 )
 
-func init() {
-	bake.Recipe(func(ctx *bake.Context) {
-		ctx.Task("build", func(ctx *bake.Context) {
-			ldflags := fmt.Sprintf("-X main.Version=%s", bake.Info.Version)
-			output := "bin/villain-couch.exe"
-			err := ctx.Run("go", "build", "-ldflags", ldflags, "-o", output, "./agent/src/")
-			if err != nil {
-				ctx.Log.Error("Build failed: %v", err)
-			}
-		})
+func createEngine() *gobake.Engine {
+	engine := gobake.New()
+	_ = engine.LoadRecipeInfo("recipe.piml")
 
-		ctx.Task("test", func(ctx *bake.Context) {
-			ctx.Run("go", "test", "./...")
-		})
-
-		ctx.Task("lint", func(ctx *bake.Context) {
-			ctx.Run("golangci-lint", "run")
-		})
+	engine.Task("build", "Build the agent", func(ctx *gobake.Context) error {
+		ldflags := fmt.Sprintf("-X main.Version=%s", engine.Info.Version)
+		output := "bin/villain-couch.exe"
+		return ctx.Run("go", "build", "-ldflags", ldflags, "-o", output, "./agent/src/")
 	})
+
+	engine.Task("test", "Run tests", func(ctx *gobake.Context) error {
+		return ctx.Run("go", "test", "./...")
+	})
+
+	engine.Task("lint", "Run linter", func(ctx *gobake.Context) error {
+		return ctx.Run("golangci-lint", "run")
+	})
+
+	return engine
 }

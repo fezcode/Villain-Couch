@@ -5,3 +5,5 @@ bin/
 *.db-journal
 vendor/
 .gemini/
+build.ps1
+build.sh
