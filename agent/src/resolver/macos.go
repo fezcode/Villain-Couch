@@ -34,6 +34,4 @@ func findVlcOnDarwin() (string, bool, error) {
 	return "", false, fmt.Errorf("could not find VLC in /Applications or via Spotlight")
 }
 
-func findVlcOnWindows() (string, bool, error) {
-	return "", false, nil
-}
+func findVlcOnWindows() (string, bool, error) { return "", false, nil }

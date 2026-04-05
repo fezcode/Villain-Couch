@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func findVlcOnWindows() (path string, found bool, err error) {
+func findVlcOnWindows() (string, bool, error) {
 	// Paths to check for VLC's Uninstall registry key.
 	// We check both the standard path and the path for 32-bit applications on 64-bit Windows.
 	registryPaths := []string{
@@ -49,6 +49,4 @@ func findVlcOnWindows() (path string, found bool, err error) {
 	return "", false, nil
 }
 
-func findVlcOnDarwin() (string, bool, error) {
-	return "", false, nil
-}
+func findVlcOnDarwin() (string, bool, error) { return "", false, nil }
