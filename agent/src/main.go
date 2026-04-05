@@ -19,9 +19,28 @@ var Version = "dev" // Overwritten by gobake build
 
 func main() {
 	// Basic flag handling
-	if len(os.Args) > 1 && (os.Args[1] == "-v" || os.Args[1] == "--version") {
-		fmt.Printf("villain-couch v%s\n", Version)
-		return
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "-v", "--version":
+			fmt.Printf("villain-couch v%s\n", Version)
+			return
+		case "-h", "--help":
+			fmt.Println("Villain Couch - VLC Progress Tracker")
+			fmt.Println("\nUsage:")
+			fmt.Println("  villain-couch [options]")
+			fmt.Println("\nOptions:")
+			fmt.Println("  -v, --version  Show version")
+			fmt.Println("  -h, --help     Show this help")
+			fmt.Println("\nControls (in TUI):")
+			fmt.Println("  Space          Toggle Pause/Play")
+			fmt.Println("  n              Next Episode")
+			fmt.Println("  h/l            Seek -/+ 10s")
+			fmt.Println("  +/-            Volume up/down")
+			fmt.Println("  Tab            Switch to History view")
+			fmt.Println("  Enter          Resume selected from History")
+			fmt.Println("  q              Quit")
+			return
+		}
 	}
 
 	bootstrap.Bootstrap()

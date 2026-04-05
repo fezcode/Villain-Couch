@@ -5,7 +5,7 @@ import (
 	"github.com/fezcode/gobake"
 )
 
-func createEngine() *gobake.Engine {
+func Run() {
 	engine := gobake.New()
 	_ = engine.LoadRecipeInfo("recipe.piml")
 
@@ -23,5 +23,5 @@ func createEngine() *gobake.Engine {
 		return ctx.Run("golangci-lint", "run")
 	})
 
-	return engine
+	engine.Execute()
 }
