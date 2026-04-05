@@ -15,7 +15,15 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+var Version = "dev" // Overwritten by gobake build
+
 func main() {
+	// Basic flag handling
+	if len(os.Args) > 1 && (os.Args[1] == "-v" || os.Args[1] == "--version") {
+		fmt.Printf("villain-couch v%s\n", Version)
+		return
+	}
+
 	bootstrap.Bootstrap()
 	flags, db, opts, conf := cli.GetFlags(), storage.GetDB(), options.GetOptions(), config.GetConfig()
 	operations.New().Build(flags, db, opts).Sort().Run().Finalize()
