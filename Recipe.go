@@ -26,7 +26,7 @@ func Run(bake *gobake.Engine) error {
 			{"darwin", "arm64"},
 		}
 
-		err := ctx.Mkdir("bin")
+		err := ctx.Mkdir("build")
 		if err != nil {
 			return err
 		}
@@ -34,7 +34,7 @@ func Run(bake *gobake.Engine) error {
 		ldflags := fmt.Sprintf("-X main.Version=%s", bake.Info.Version)
 
 		for _, t := range targets {
-			output := "bin/" + bake.Info.Name + "-" + t.os + "-" + t.arch
+			output := "build/" + bake.Info.Name + "-" + t.os + "-" + t.arch
 			if t.os == "windows" {
 				output += ".exe"
 			}
